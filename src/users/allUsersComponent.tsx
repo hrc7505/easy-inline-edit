@@ -33,6 +33,9 @@ export default class AllUsersComponent extends React.Component<IAllUsersProps> {
     this.props.getData();
   }
 
+  /**
+   * Handles onchange
+   */
   private onChange = (index: number, key?: string, value?: boolean | string | number) => {
     if (key) {
       this.editedData = {
