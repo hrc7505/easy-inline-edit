@@ -1,3 +1,4 @@
+import * as React from "react";
 import { IColumn, IDropdownOption, ColumnActionsMode } from "office-ui-fabric-react";
 
 import IUserModel from "../models/IUserModel";
@@ -15,7 +16,9 @@ export default class CommonUtils {
                 minWidth: 40,
                 maxWidth: 40,
                 columnActionsMode: ColumnActionsMode.disabled,
-                onRender: (item?: IUserModel, index?: number, column?: IColumn) => (index as number) + 1,
+                onRender: (item?: IUserModel, index?: number, column?: IColumn) =>
+                    <div className="customCell">{(index as number) + 1}</div>,
+                className: "cellContainer",
             },
             {
                 key: "isSocial",
@@ -27,6 +30,7 @@ export default class CommonUtils {
                 maxWidth: 100,
                 columnActionsMode: ColumnActionsMode.disabled,
                 isResizable: true,
+                className: "cellContainer",
             },
             {
                 key: "name",
@@ -38,6 +42,7 @@ export default class CommonUtils {
                 maxWidth: 150,
                 columnActionsMode: ColumnActionsMode.disabled,
                 isResizable: true,
+                className: "cellContainer",
             },
             {
                 key: "role",
@@ -49,6 +54,7 @@ export default class CommonUtils {
                 maxWidth: 200,
                 columnActionsMode: ColumnActionsMode.disabled,
                 isResizable: true,
+                className: "cellContainer",
             },
             {
                 key: "isAgreed",
@@ -60,6 +66,7 @@ export default class CommonUtils {
                 maxWidth: 100,
                 columnActionsMode: ColumnActionsMode.disabled,
                 isResizable: true,
+                className: "cellContainer",
             },
             {
                 key: "email",
@@ -71,6 +78,7 @@ export default class CommonUtils {
                 maxWidth: 150,
                 columnActionsMode: ColumnActionsMode.disabled,
                 isResizable: true,
+                className: "cellContainer",
             },
             {
                 key: "city",
@@ -82,22 +90,12 @@ export default class CommonUtils {
                 maxWidth: 200,
                 columnActionsMode: ColumnActionsMode.disabled,
                 isResizable: true,
-            },
-            {
-                key: ColumnKey.Edit,
-                // * Using data key to show control(TextField, ToggleField, Edit button etc)
-                data: ColumnKey.Edit,
-                name: "Edit",
-                fieldName: ColumnKey.Edit,
-                minWidth: 75,
-                maxWidth: 75,
-                columnActionsMode: ColumnActionsMode.disabled,
-                isResizable: true,
+                className: "cellContainer",
             },
         ];
     }
 
-    public static getDropdownOptions(fieldName: string): IDropdownOption[] {
+    public static getDropdownOptions(fieldName?: string): IDropdownOption[] {
         if (fieldName === "role") {
             return [
                 { key: 'qc', text: 'QC' },
@@ -124,12 +122,12 @@ export default class CommonUtils {
 
     public static getRandomItems(): IUserModel[] {
         const toggleValues = [true, false];
-        const textFieldValues = ["Hardik Chaudhari", "Haresh Kalyani", "Keyur Belani", "Nikunj Mistri", "Jhon Doe", "Ramesh Oza", "Harsimrat Thukral", "Martha Thukral", "Sherwin Kong", "Jigar Paladiya", "Sundar Gada", "Dhaval Shah", "Sagar Chauhan"];
+        const textFieldValues = ["Hardik Chaudhari", "Haresh Kalyani", "Keyur Belani", "Nikunj Mistry", "Jhon Doe", "Ramesh Oza", "Harsimrat Thukral", "Martha Thukral", "Sherwin Kong", "Jigar Paladiya", "Sundar Gada", "Dhaval Shah", "Sagar Chauhan"];
         const roles = ["qc", "nde", "siteadmin"];
         const cities = ["msn", "ahm", "del", "gan"];
 
         const items: IUserModel[] = [];
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 3; i++) {
             items.push({
                 id: "u-" + i.toString(),
                 isSocialUser: getRandomItem(toggleValues),

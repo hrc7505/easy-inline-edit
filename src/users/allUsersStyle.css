@@ -1,0 +1,18 @@
+.cellContainer {
+    padding: 0;
+    min-height: auto;
+}
+
+.customCell{
+/*     padding-top: 11px;
+    padding-bottom: 11px; */
+    padding-left: 12px;
+    height:100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.customCell.editMode{
+    /* padding: 0; */
+}

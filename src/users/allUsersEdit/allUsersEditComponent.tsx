@@ -1,79 +1,38 @@
 import * as React from "react";
-import { Toggle, TextField, Dropdown, IDropdownOption, ActionButton, Spinner, SpinnerSize } from 'office-ui-fabric-react';
+import { Toggle, TextField, Dropdown, IDropdownOption, ITextField, ProgressIndicator, IDropdown, IToggle } from 'office-ui-fabric-react';
 
 import IAllUsersEditProps from "./interfaces/IAllUsersEditProps";
 import ColumnKey from "../enums/ColumnKey";
 import CommonUtils from "../../utils/CommonUtils";
 
 export default class AllUsersEditComponent extends React.Component<IAllUsersEditProps> {
+    private componentRef: IToggle | ITextField | IDropdown | null = null;
+
     public render() {
-        const { itemIndex: index, column, isEditMode, item, fieldItem: itemToShow } = this.props;
+        const { column, isEditMode, item } = this.props;
         let compoToRender;
 
-        const fieldName = column.fieldName as string;
         switch (column.data) {
             case ColumnKey.ToggleField:
-                compoToRender = (
-                    !isEditMode
-                        ? item[fieldName] ? "Yes" : "No"
-                        : <Toggle
-                            checked={itemToShow[fieldName] as boolean}
-                            onText="Yes"
-                            offText="No"
-                            onChange={(e, checked?: boolean) => this.props.onChange(fieldName, checked as boolean, index)}
-                        />
-                );
+                compoToRender = !isEditMode
+                    ? column.fieldName ? (item[column.fieldName] ? "Yes" : "No") : null
+                    : this.renderToggleField();
                 break;
 
             case ColumnKey.TextField:
-                compoToRender = (
-                    !isEditMode
-                        ? item[fieldName]
-                        : <TextField
-                            value={itemToShow[fieldName] as string}
-                            onChange={(e, newValue?: string) => this.props.onChange(fieldName, newValue as string, index)}
-                        />
-                );
+                compoToRender = !isEditMode
+                    ? (column.fieldName ? item[column.fieldName] : null)
+                    : this.renderTextField();
                 break;
 
             case ColumnKey.Dropdown:
                 if (!isEditMode) {
-                    const option = CommonUtils.getDropdownOptions(fieldName)
-                        .find((option: IDropdownOption) => option.key === item[fieldName]);
-                    return option ? option.text : null;
+                    const option = CommonUtils.getDropdownOptions(column.fieldName)
+                        .find((option: IDropdownOption) => option.key === item[column.fieldName as string]);
+                    compoToRender = option ? option.text : null;
+                } else {
+                    compoToRender = this.renderDropdownField();
                 }
-
-                compoToRender = (
-                    <Dropdown
-                        selectedKey={itemToShow[fieldName] as string}
-                        onChange={(e, option?: IDropdownOption, i?: number) =>
-                            this.props.onChange(fieldName, (option as IDropdownOption).key as string, index)}
-                        placeholder="Select an item"
-                        options={CommonUtils.getDropdownOptions(fieldName)}
-                        styles={{ dropdown: { width: 200 } }}
-                    />
-                );
-                break;
-
-            case ColumnKey.Edit:
-                compoToRender = this.props.isLoading
-                    ? (
-                        <Spinner
-                            label="Saving..."
-                            labelPosition="right"
-                            styles={{ root: { justifyContent: "flex-start" } }}
-                            size={SpinnerSize.small}
-                        />
-                    )
-                    : (
-                        <ActionButton
-                            iconProps={{ iconName: !isEditMode ? 'edit' : "save" }}
-                            styles={{ root: { height: "20px" } }}
-                            onClick={this.handleActionBtnClick}
-                        >
-                            {!isEditMode ? "Edit" : "Save"}
-                        </ActionButton>
-                    );
                 break;
 
             default:
@@ -82,18 +41,101 @@ export default class AllUsersEditComponent extends React.Component<IAllUsersEdit
         }
 
         return (
-            <div style={{ pointerEvents: this.props.isLoading ? "none" : "auto", opacity: this.props.isLoading ? 0.5 : 1 }}>
+            <div
+                className={`customCell ${isEditMode ? "editMode" : ""}`}
+                onClick={this.handleCellFocus}
+            >
                 {compoToRender}
+                {this.props.isLoading &&
+                    <ProgressIndicator
+                        styles={{
+                            root: {
+                                position: "absolute",
+                                top: "-8px",
+                                width: "100%"
+                            }
+                        }}
+                    />
+                }
             </div>
         );
     }
 
-    private handleActionBtnClick = () => {
-        if (!this.props.isEditMode) {
-            this.props.updateEditedData({
-                [this.props.itemIndex]: this.props.item
-            });
+    private setRef = (ref: IToggle | ITextField | IDropdown | null) => this.componentRef = ref;
+
+    private handleBlur = (e?: React.FocusEvent<HTMLElement>) => {
+        if (e) {
+            e.preventDefault();
         }
-        this.props.onActionBtnClick(this.props.itemIndex);
-    }
+        const { fieldName } = this.props.column;
+        const hasValueChanged: boolean = fieldName
+            ? this.props.item[fieldName] !== this.props.fieldItem[fieldName]
+            : false;
+        this.props.handleCellBlur(this.props.itemIndex, this.props.column.key, hasValueChanged);
+    };
+
+    private handleCellFocus = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        e.preventDefault();
+        if (!this.props.isLoading) {
+            if (!this.props.isEditMode) {
+                this.props.updateEditedData({
+                    [this.props.itemIndex]: { ...this.props.item, ...this.props.fieldItem ? this.props.fieldItem : {} }
+                }, () => {
+                    if (this.componentRef) {
+                        this.componentRef.focus();
+                    }
+                });
+            }
+            this.props.handleCellFocus(this.props.itemIndex, this.props.column.key);
+        }
+    };
+
+    private renderTextField = () => {
+        const { itemIndex, fieldItem, column } = this.props;
+
+        return (
+            <TextField
+                componentRef={this.setRef}
+                value={column.fieldName ? fieldItem[column.fieldName] as string : ""}
+                disabled={this.props.isLoading}
+                onChange={(e, newValue?: string) => this.props.onChange(itemIndex, column.fieldName, newValue)}
+                onBlur={this.handleBlur}
+            />
+        );
+    };
+
+    private renderDropdownField = () => {
+        const { itemIndex, fieldItem, column } = this.props;
+
+        return (
+            <Dropdown
+                componentRef={this.setRef}
+                selectedKey={column.fieldName ? fieldItem[column.fieldName] as string : ""}
+                placeholder="Select an item"
+                disabled={this.props.isLoading}
+                options={CommonUtils.getDropdownOptions(column.fieldName)}
+                onChange={(e: React.FormEvent<HTMLDivElement>, option?: IDropdownOption, i?: number) =>
+                    this.props.onChange(itemIndex, column.fieldName, option && option.key)}
+                onBlur={this.handleBlur}
+                styles={{ dropdown: { width: 200 } }}
+            />
+        );
+    };
+
+    private renderToggleField = () => {
+        const { itemIndex, fieldItem, column } = this.props;
+
+        return (
+            <Toggle
+                componentRef={this.setRef}
+                checked={column.fieldName ? fieldItem[column.fieldName] as boolean | undefined : false}
+                disabled={this.props.isLoading}
+                onText="Yes"
+                offText="No"
+                onChange={(e, checked?: boolean) => this.props.onChange(itemIndex, column.fieldName, checked)}
+                onBlur={this.handleBlur}
+                styles={{ root: { marginBottom: 0 } }}
+            />
+        );
+    };
 }

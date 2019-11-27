@@ -1,6 +1,7 @@
+import ICellInfo from "../../interfaces/ICellInfo";
+
 export default interface IAllUsersState {
     isLoading: boolean;
     users: string[];
-    isRowLoading: boolean;
-    editingIndex: number;
+    cellData: { [key: string]: ICellInfo; };
 }

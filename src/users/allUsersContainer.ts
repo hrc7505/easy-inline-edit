@@ -11,9 +11,11 @@ import AllUsersComponent from "./allUsersComponent";
 import IData from "../data/duck/interfaces/IData";
 import IUserModel from "../models/IUserModel";
 import allUsersUpdateUser from "./duck/operations/allUsersUpdateUser";
-import allUsersSelectEditingIndex from "./duck/actions/allUsersSelectEditingIndex";
+import allUsersSelectCellToEdit from "./duck/actions/allUsersSelectCellToEdit";
 import IUserDetailsList from "../detailsList/IUserDetailsList";
+import IAllUsersSelectCellToEditDataPayload from "./duck/actions/interfaces/IAllUsersSelectCellToEditDataPayload";
 
+// Todo: Should use selector to memoize below function.
 const getUsers = (ids: string[], users: IData<IUserModel>) => {
     if (ids && Object.keys(users).length > 0) {
         return ids.map((id: string): IUserDetailsList => {
@@ -36,18 +38,16 @@ const mapStateToProps: MapStateToProps<IAllUsersPropsFromState, object, IAppStat
     (state: IAppState): IAllUsersPropsFromState => ({
         isLoading: state.userState.isLoading,
         listItems: getUsers(state.userState.users, state.dataState.users),
-        editingIndex: state.userState.editingIndex,
-        isRowLoading: state.userState.isRowLoading,
+        cellData: state.userState.cellData,
     });
 
 const mapDispatchToProps: MapDispatchToProps<IAllUsersPropsFromDispatch, object> =
     (dispatch: ThunkDispatch<IAppState, void, Action>): IAllUsersPropsFromDispatch => ({
         getData: () => dispatch(allUsersGetUsers()),
-        updateModal: (userModal: IUserModel, editingIndex: number) => dispatch(allUsersUpdateUser(userModal, editingIndex)),
-        selectRowToEdit: (editingIndex: number) => dispatch(allUsersSelectEditingIndex({
-            editingIndex,
-            isRowLoading: false,
-        }))
+        updateModal: (userModal: IUserModel, editingIndex: number, columnKey: string) =>
+            dispatch(allUsersUpdateUser(userModal, editingIndex, columnKey)),
+        selectCellToEdit: (payload: IAllUsersSelectCellToEditDataPayload) =>
+            dispatch(allUsersSelectCellToEdit(payload))
     });
 
 const AllUsersContainer: ConnectedComponent<typeof AllUsersComponent, Pick<IAllUsersProps, never> & object> =

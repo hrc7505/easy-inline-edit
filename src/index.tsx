@@ -4,6 +4,7 @@ import * as serviceWorker from './serviceWorker';
 import { Provider } from 'react-redux';
 import { createStore, applyMiddleware } from 'redux';
 import ReduxThunk from 'redux-thunk';
+import logger from "redux-logger";
 import { initializeIcons } from '@uifabric/icons';
 
 import App from './App';
@@ -27,14 +28,14 @@ loadTheme({
             fontWeight: '600'
         }
     },
-    effects:{roundedCorner2:"6px"}
+    effects: { roundedCorner2: "6px" }
 });
 
 initializeIcons();
 
 const store = createStore(
     appReducer,
-    applyMiddleware(ReduxThunk),
+    applyMiddleware(ReduxThunk, logger),
 );
 
 ReactDOM.render(

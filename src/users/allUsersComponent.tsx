@@ -6,6 +6,10 @@ import IUserModel from '../models/IUserModel';
 import CommonUtils from '../utils/CommonUtils';
 import AllUsersEditComponent from './allUsersEdit/allUsersEditComponent';
 import IAllUsersEditedData from './interfaces/IAllUsersEditedData';
+import IAllUsersKeyValuePair from './interfaces/IAllUsersKeyValuePair';
+import ICellInfo from './interfaces/ICellInfo';
+
+import "./allUsersStyle.css";
 
 export default class AllUsersComponent extends React.Component<IAllUsersProps> {
   private editedData: IAllUsersEditedData = {};
@@ -29,45 +33,66 @@ export default class AllUsersComponent extends React.Component<IAllUsersProps> {
     this.props.getData();
   }
 
-  private onChange = (key: string, value: boolean | string, index: number) => {
-    this.editedData = {
-      [index]: {
-        ...this.editedData[index],
-        [key]: value,
-      }
-    };
+  private onChange = (index: number, key?: string, value?: boolean | string | number) => {
+    if (key) {
+      this.editedData = {
+        ...this.editedData,
+        [index]: {
+          ...this.editedData[index],
+          [key]: value,
+        }
+      };
 
-    this.forceUpdate();
-  }
-
-  private updateEditedData = (data: IAllUsersEditedData) => {
-    this.editedData = data;
-    this.forceUpdate();
-  }
-
-  private handleActionBtnClick = (itemIndex: number) => {
-    let index: number;
-    if (this.props.editingIndex !== itemIndex) {
-      index = itemIndex;
-      this.props.selectRowToEdit(index)
-    } else {
-      index = -1;
-      this.props.updateModal(this.editedData[itemIndex] as unknown as IUserModel, itemIndex);
+      this.forceUpdate();
     }
   }
 
-  private renderItemColumn = (item: IUserModel, index?: number, column?: IColumn): React.ReactNode => {
+  private updateEditedData = (data: IAllUsersEditedData, callBackFun?: () => void) => {
+    this.editedData = { ...this.editedData, ...data };
+    this.forceUpdate(callBackFun);
+  }
+
+
+  private handleCellFocus = (itemIndex: number, columnKey: string) => {
+    this.props.selectCellToEdit({
+      itemIndex,
+      columnKey,
+      isCellLoading: false,
+      isEditMode: true,
+    });
+  }
+
+  private handleCellBlur = (itemIndex: number, columnKey: string, hasValueChanged: boolean) => {
+    if (hasValueChanged) {
+      this.props.updateModal(this.editedData[itemIndex] as unknown as IUserModel, itemIndex, columnKey);
+    } else {
+      this.props.selectCellToEdit({
+        itemIndex,
+        columnKey,
+        isCellLoading: false,
+        isEditMode: false,
+      });
+    }
+  }
+
+  private renderItemColumn = (item: IAllUsersKeyValuePair, index?: number, c?: IColumn): React.ReactNode => {
+    const column: IColumn = c as IColumn;
+    const cellInfo: ICellInfo = this.props.cellData[column.key + index]
+      ? this.props.cellData[column.key + index]
+      : {} as ICellInfo;
+
     return (
       <AllUsersEditComponent
         itemIndex={index as number}
-        item={item as any}
-        column={column as IColumn}
-        isEditMode={this.props.editingIndex === index}
-        onActionBtnClick={this.props.isRowLoading ? () => null : this.handleActionBtnClick}
+        item={item}
+        column={column}
+        isEditMode={cellInfo.isEditMode}
         onChange={this.onChange}
         fieldItem={this.editedData[index as number]}
-        updateEditedData={this.props.isRowLoading ? () => null : this.updateEditedData}
-        isLoading={this.props.editingIndex === index && this.props.isRowLoading}
+        updateEditedData={this.updateEditedData}
+        isLoading={cellInfo.isCellLoading}
+        handleCellFocus={this.handleCellFocus}
+        handleCellBlur={this.handleCellBlur}
       />
     );
   }

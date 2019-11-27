@@ -1,8 +1,8 @@
 import IUserDetailsList from "../../detailsList/IUserDetailsList";
+import ICellInfo from "./ICellInfo";
 
 export default interface IListPropsFromState {
     isLoading: boolean;
     listItems: IUserDetailsList[];
-    editingIndex: number;
-    isRowLoading: boolean;
+    cellData: { [key: string]: ICellInfo; };
 }

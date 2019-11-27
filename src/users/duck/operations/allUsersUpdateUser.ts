@@ -2,20 +2,24 @@ import { Dispatch } from "redux";
 
 import IUserModel from "../../../models/IUserModel";
 import dataCreateUpdateUsers from "../../../data/duck/actions/dataCreateUpdateUsers";
-import allUsersSelectEditingIndex from "../actions/allUsersSelectEditingIndex";
+import allUsersSelectCellToEdit from "../actions/allUsersSelectCellToEdit";
 
-const allUsersUpdateUser = (userModal: IUserModel, editingIndex: number) => (
+const allUsersUpdateUser = (userModal: IUserModel, itemIndex: number, columnKey: string) => (
     async (dispatch: Dispatch) => {
-        dispatch(allUsersSelectEditingIndex({
-            isRowLoading: true,
-            editingIndex,
+        dispatch(allUsersSelectCellToEdit({
+            isCellLoading: true,
+            itemIndex,
+            columnKey,
+            isEditMode: true,
         }));
         const timeoutId = setTimeout(() => {
             // Delaying to show spinner in the screen.
 
-            dispatch(allUsersSelectEditingIndex({
-                isRowLoading: false,
-                editingIndex: -1,
+            dispatch(allUsersSelectCellToEdit({
+                isCellLoading: false,
+                itemIndex,
+                columnKey,
+                isEditMode: false,
             }));
 
             // Dispatch models to data specific reducer
@@ -25,7 +29,7 @@ const allUsersUpdateUser = (userModal: IUserModel, editingIndex: number) => (
 
             // Clearing timer.
             clearTimeout(timeoutId);
-        }, 3000);
+        }, 10000);
     }
 );
 

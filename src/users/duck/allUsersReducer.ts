@@ -4,15 +4,14 @@ import IAllUsersRequestDataAction from "./actions/interfaces/IAllUsersRequestDat
 import IAllUsersLoadDataAction from "./actions/interfaces/IAllUsersLoadDataAction";
 import IAllUsersState from "./interfaces/IAllUsersState";
 import AllUsersActionTypes from "./actionTypes/AllUsersActionTypes";
-import IAllUsersSelectEditingIndexAction from "./actions/interfaces/IAllUsersSelectEditingIndexAction";
+import IAllUsersSelectCellToEditAction from "./actions/interfaces/IAllUsersSelectCellToEditAction";
 
-type Action = IAllUsersRequestDataAction | IAllUsersLoadDataAction | IAllUsersSelectEditingIndexAction;
+type Action = IAllUsersRequestDataAction | IAllUsersLoadDataAction | IAllUsersSelectCellToEditAction;
 
 const initialState: IAllUsersState = {
     isLoading: false,
     users: [],
-    isRowLoading: false,
-    editingIndex: -1,
+    cellData: {}
 };
 
 const allUsersReducer: Reducer<IAllUsersState, Action> =
@@ -31,11 +30,18 @@ const allUsersReducer: Reducer<IAllUsersState, Action> =
                     users: action.payload.users,
                 };
 
-            case AllUsersActionTypes.ALL_USERS_SELECT_EDITING_INDEX:
+            case AllUsersActionTypes.ALL_USERS_SELECT_CELL_TO_EDIT:
                 return {
                     ...state,
-                    isRowLoading: action.payload.isRowLoading,
-                    editingIndex: action.payload.editingIndex,
+                    cellData: {
+                        ...state.cellData,
+                        [action.payload.columnKey + action.payload.itemIndex]: {
+                            isCellLoading: action.payload.isCellLoading,
+                            itemIndex: action.payload.itemIndex,
+                            columnKey: action.payload.columnKey,
+                            isEditMode: action.payload.isEditMode,
+                        },
+                    },
                 };
 
             default:
